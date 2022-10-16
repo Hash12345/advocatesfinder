@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from .models import (
     Advocate,
+    Link,
 )
 
 class AdvocateBaseSerializer(serializers.ModelSerializer):
@@ -60,3 +61,27 @@ class AdvocateUpdateSerializer(AdvocateBaseSerializer):
             'updated',
         ]
         read_only_fields = ('id',)
+
+
+class LinkListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        links = [Link(**link) for link in validated_data]
+        return Link.objects.bulk_create(links)
+
+
+class LinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Link
+        fields = ['name', 'advocate', 'followers', 'url', 'created', 'updated']
+        read_only_fields = ('id',)
+        list_serializer_class = LinkListSerializer
+
+
+class LinkRequestChildSerializer(serializers.Serializer):
+    name = serializers.CharField(required=True)
+    followers = serializers.IntegerField(required=False)
+    url = serializers.URLField(required=True)
+
+
+class LinkRequestBodySerializer(serializers.Serializer):
+    links = serializers.ListField(child=LinkRequestChildSerializer(), required=True, allow_empty=False)

@@ -51,7 +51,7 @@ class Advocate(AbstractUser):
         return self.full_name
 
 
-class link(models.Model):
+class Link(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, blank=False, null=False)
     advocate = models.ForeignKey(to=Advocate, on_delete=models.CASCADE, blank=False, null=False)

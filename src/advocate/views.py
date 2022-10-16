@@ -4,10 +4,13 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 from .serializers import (
+    LinkSerializer,
     SignupSerializer,
     AdvocateUpdateSerializer,
+    LinkRequestBodySerializer,
 )
 from utils.token_utils import get_tokens_for_user
+from utils.link_utils import add_advocate_to_links
 
 # Create your views here.
 class Signup(APIView):
@@ -33,3 +36,21 @@ class UpdateAdvocateBioView(APIView):
             serializer.save()
             return Response(serializer.data, status.HTTP_200_OK)
         return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+
+class AddLinksView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        request_body = request.data.copy()
+        advocate = request.user
+        request_serializer = LinkRequestBodySerializer(data=request_body)
+        if not request_serializer.is_valid():
+            return Response(request_serializer.errors, status.HTTP_400_BAD_REQUEST)
+        print(request_serializer.data)
+        links = add_advocate_to_links(request_serializer.data['links'], advocate.id)
+        serializer = LinkSerializer(data=links, many=True)
+        if not serializer.is_valid():
+            return Response(request_serializer.errors, status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status.HTTP_201_CREATED)
