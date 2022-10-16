@@ -40,6 +40,7 @@ class Advocate(AbstractUser):
     priority = models.IntegerField(default=0)
     tech_stack  = models.ManyToManyField(to=TechStack)
     company = models.ForeignKey(to=Company, on_delete=models.SET_NULL, blank=True, null=True)
+    is_complete = models.BooleanField(default=False, null=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
