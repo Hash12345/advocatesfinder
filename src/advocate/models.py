@@ -11,6 +11,9 @@ class Company(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name_plural = 'Companies'
+
     def __str__(self):
         return self.name
     
@@ -33,7 +36,7 @@ class Advocate(AbstractUser):
     profile_pic = models.ImageField(upload_to="profile", blank=True)
     bio_short = models.TextField(max_length=500, blank=True, null=True)
     bio_long = models.TextField(max_length=5000, blank=True, null=True)
-    advocate_years_exp = models.PositiveIntegerField(blank=False, null=False)
+    advocate_years_exp = models.PositiveIntegerField(blank=True, null=True)
     priority = models.IntegerField(default=0)
     tech_stack  = models.ManyToManyField(to=TechStack)
     company = models.ForeignKey(to=Company, on_delete=models.SET_NULL, blank=True, null=True)
