@@ -8,9 +8,14 @@ from .serializers import (
     SignupSerializer,
     AdvocateUpdateSerializer,
     LinkRequestBodySerializer,
+    AdvocateResponseSerializer,
+)
+from .models import (
+    Advocate,
 )
 from utils.token_utils import get_tokens_for_user
 from utils.link_utils import add_advocate_to_links
+from utils.pagination_utils import CustomPagination
 
 # Create your views here.
 class Signup(APIView):
@@ -54,3 +59,14 @@ class AddLinksView(APIView):
             return Response(request_serializer.errors, status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(serializer.data, status.HTTP_201_CREATED)
+
+
+class AdvocateView(APIView, CustomPagination):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        queryset = Advocate.objects.all()
+        result_page = self.paginate_queryset(queryset, request)
+        serializer = AdvocateResponseSerializer(result_page, many=True)
+        paginated_data = self.get_paginated_response(serializer.data)
+        return Response(paginated_data, status.HTTP_200_OK)

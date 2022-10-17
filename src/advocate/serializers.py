@@ -5,7 +5,23 @@ from rest_framework import serializers
 from .models import (
     Advocate,
     Link,
+    Company,
+    TechStack,    
 )
+
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = ['id', 'name', 'log', 'website', 'created', 'updated']
+        read_only_fields = ('id', )
+
+
+class TechStackSrializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = ['id', 'name', 'created', 'updated']
+        read_only_fields = ('id', )
+
 
 class AdvocateBaseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -85,3 +101,27 @@ class LinkRequestChildSerializer(serializers.Serializer):
 
 class LinkRequestBodySerializer(serializers.Serializer):
     links = serializers.ListField(child=LinkRequestChildSerializer(), required=True, allow_empty=False)
+
+
+class AdvocateResponseSerializer(AdvocateBaseSerializer):
+    company = CompanySerializer(read_only=True)
+    tech_stack = TechStackSrializer(read_only=True, many=True)
+    links = LinkSerializer(read_only=True, many=True)
+
+    class Meta(AdvocateBaseSerializer.Meta):
+        fields = [
+            'id',
+            'first_name', 
+            'last_name',
+            'email',
+            'bio_short',
+            'bio_long',
+            'advocate_years_exp',
+            'profile_pic',
+            'company',
+            'tech_stack',
+            'links',
+            'created',
+            'updated',
+        ]
+        read_only_fields = ('id',)

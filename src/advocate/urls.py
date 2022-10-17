@@ -7,7 +7,8 @@ from rest_framework_simplejwt.views import (
 from .views import (
     Signup,
     UpdateAdvocateBioView,
-    AddLinksView
+    AddLinksView,
+    AdvocateView,
 )
 urlpatterns = [
     #JWT Token
@@ -17,5 +18,6 @@ urlpatterns = [
     path('signup/', Signup.as_view(), name='signup'),
     path('update_bio/', UpdateAdvocateBioView.as_view(), name='update_bio'),
     path('add_links/', AddLinksView.as_view(), name='add_links'),
+    path('advocates/', AdvocateView.as_view(), name='advocates'),
 
 ]

@@ -54,7 +54,7 @@ class Advocate(AbstractUser):
 class Link(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, blank=False, null=False)
-    advocate = models.ForeignKey(to=Advocate, on_delete=models.CASCADE, blank=False, null=False)
+    advocate = models.ForeignKey(to=Advocate, related_name='links', on_delete=models.CASCADE, blank=False, null=False)
     followers = models.PositiveIntegerField(default=0)
     url = models.URLField(unique=True, blank=False, null=False)
     created = models.DateTimeField(auto_now_add=True)
