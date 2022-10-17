@@ -1,11 +1,16 @@
-from django.db.models import Q
+# Python Imports
+import time
 
+# Django Import
+from django.db.models import Q
+from django.conf import settings
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
+# Project Imports
 from .serializers import (
     LinkSerializer,
     SignupSerializer,
@@ -21,6 +26,8 @@ from .models import (
 from utils.token_utils import get_tokens_for_user
 from utils.link_utils import add_advocate_to_links
 from utils.pagination_utils import CustomPagination
+from utils.agora_token.RtmTokenBuilder import RtmTokenBuilder
+from utils.agora_token.RtcTokenBuilder import RtcTokenBuilder, Role_Attendee
 
 # Create your views here.
 class Signup(APIView):
@@ -122,3 +129,50 @@ class SearchAdvocateView(APIView, CustomPagination):
         serializer = AdvocateResponseSerializer(result_page, many=True)
         paginated_data = self.get_paginated_response(serializer.data)
         return Response(paginated_data, status.HTTP_200_OK)
+
+
+class generateRTMToken(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            appID = settings.AGORA_APP_ID
+            appCertificate = settings.AGORA_APP_CERTIFICATE
+            user = str(request.user.id)
+            role = 1
+            expirationTimeInSeconds = 3600 * 24
+            currentTimestamp = int(time.time())
+            privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds
+            token = RtmTokenBuilder.buildToken(
+                appID, appCertificate, user, role, privilegeExpiredTs
+            )
+            data = {"app_id": appID, 'token': token}
+            return Response(data, status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(str(ex), status.HTTP_400_BAD_REQUEST)
+
+
+class generateRTCToken(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            channelName = request.data['channel_name']
+            userAccount = request.data['user_id']
+        except KeyError as e:
+            error = {str(e): ["This field is required."]}
+            return Response(error, status.HTTP_400_BAD_REQUEST)
+        appID = settings.AGORA_APP_ID
+        appCertificate = settings.AGORA_APP_CERTIFICATE
+        role = 1
+        expirationTimeInSeconds = 3600 * 24
+        currentTimestamp = int(time.time())
+        privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds
+        token = RtcTokenBuilder.buildTokenWithUid(
+            appID,
+            appCertificate,
+            channelName,
+            userAccount,
+            Role_Attendee,
+            privilegeExpiredTs,
+        )
+        data = {'app_id': appID, 'token': token}
+        return Response(data, status.HTTP_200_OK)
