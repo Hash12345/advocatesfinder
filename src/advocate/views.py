@@ -70,3 +70,14 @@ class AdvocateView(APIView, CustomPagination):
         serializer = AdvocateResponseSerializer(result_page, many=True)
         paginated_data = self.get_paginated_response(serializer.data)
         return Response(paginated_data, status.HTTP_200_OK)
+
+class AdvocateDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        advocate = Advocate.objects.filter(pk=pk).first()
+        if not advocate:
+            return Response('Advocate with given id not found.', status.HTTP_404_NOT_FOUND)
+        serializer = AdvocateResponseSerializer(advocate)
+        return Response(serializer.data, status.HTTP_200_OK)

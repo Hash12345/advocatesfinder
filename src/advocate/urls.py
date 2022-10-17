@@ -9,6 +9,7 @@ from .views import (
     UpdateAdvocateBioView,
     AddLinksView,
     AdvocateView,
+    AdvocateDetailView,
 )
 urlpatterns = [
     #JWT Token
@@ -19,5 +20,6 @@ urlpatterns = [
     path('update_bio/', UpdateAdvocateBioView.as_view(), name='update_bio'),
     path('add_links/', AddLinksView.as_view(), name='add_links'),
     path('advocates/', AdvocateView.as_view(), name='advocates'),
+    path('advocates/<uuid:pk>/', AdvocateDetailView.as_view(), name='advocates_detail'),
 
 ]
