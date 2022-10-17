@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from .serializers import (
@@ -9,9 +10,11 @@ from .serializers import (
     AdvocateUpdateSerializer,
     LinkRequestBodySerializer,
     AdvocateResponseSerializer,
+    CompanySerializer
 )
 from .models import (
     Advocate,
+    Company,
 )
 from utils.token_utils import get_tokens_for_user
 from utils.link_utils import add_advocate_to_links
@@ -71,6 +74,7 @@ class AdvocateView(APIView, CustomPagination):
         paginated_data = self.get_paginated_response(serializer.data)
         return Response(paginated_data, status.HTTP_200_OK)
 
+
 class AdvocateDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -80,4 +84,27 @@ class AdvocateDetailView(APIView):
         if not advocate:
             return Response('Advocate with given id not found.', status.HTTP_404_NOT_FOUND)
         serializer = AdvocateResponseSerializer(advocate)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+
+class CompaniesView(APIView, CustomPagination):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, *args, **kwargs):
+        queryset = Company.objects.all()
+        result_page = self.paginate_queryset(queryset, request)
+        serializer = CompanySerializer(result_page, many=True)
+        paginated_data = self.get_paginated_response(serializer.data)
+        return Response(paginated_data, status.HTTP_200_OK)
+
+
+class CompanyDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        company = Company.objects.filter(pk=pk).first()
+        if not company:
+            return Response('company with given id not found.', status.HTTP_404_NOT_FOUND)
+        serializer = CompanySerializer(company)
         return Response(serializer.data, status.HTTP_200_OK)

@@ -12,7 +12,7 @@ from .models import (
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ['id', 'name', 'log', 'website', 'created', 'updated']
+        fields = ['id', 'name', 'logo', 'website', 'created', 'updated']
         read_only_fields = ('id', )
 
 
