@@ -23,6 +23,7 @@ from .serializers import (
 from .models import (
     Advocate,
     Company,
+    Review
 )
 from utils.token_utils import get_tokens_for_user
 from utils.link_utils import add_advocate_to_links
@@ -34,14 +35,14 @@ from utils.agora_token.RtcTokenBuilder import RtcTokenBuilder, Role_Attendee
 class Signup(APIView):
     def post(self, request, *args, **kwargs):
         serializer = SignupSerializer(data=request.data)
-        if serializer.is_valid():
-            advocate = serializer.save()
-            data = {
-                'advocate': serializer.data,
-                'token': get_tokens_for_user(advocate)
-            }
-            return Response(data, status.HTTP_201_CREATED)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        advocate = serializer.save()
+        data = {
+            'advocate': serializer.data,
+            'token': get_tokens_for_user(advocate)
+        }
+        return Response(data, status.HTTP_201_CREATED)
 
 
 class UpdateAdvocateBioView(APIView):
@@ -50,10 +51,10 @@ class UpdateAdvocateBioView(APIView):
     def patch(self, request, *args, **kwargs):
         advocate = request.user
         serializer = AdvocateUpdateSerializer(advocate, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status.HTTP_200_OK)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status.HTTP_200_OK)
 
 
 class AddLinksView(APIView):
@@ -65,7 +66,6 @@ class AddLinksView(APIView):
         request_serializer = LinkRequestBodySerializer(data=request_body)
         if not request_serializer.is_valid():
             return Response(request_serializer.errors, status.HTTP_400_BAD_REQUEST)
-        print(request_serializer.data)
         links = add_advocate_to_links(request_serializer.data['links'], advocate.id)
         serializer = LinkSerializer(data=links, many=True)
         if not serializer.is_valid():
@@ -190,3 +190,18 @@ class AddReviewView(APIView):
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(serializer.data, status.HTTP_201_CREATED)
+
+
+class ShowReviewsView(APIView, CustomPagination):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        advocator = Advocate.objects.filter(pk=pk).first()
+        if not advocator:
+            return Response('advocator with given id not found.', status.HTTP_404_NOT_FOUND)
+        queryset = Review.objects.filter(advocator=advocator)
+        result_page = self.paginate_queryset(queryset, request)
+        serializer = ReviewSerializer(result_page, many=True)
+        paginated_data = self.get_paginated_response(serializer.data)
+        return Response(paginated_data, status.HTTP_200_OK)

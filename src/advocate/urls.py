@@ -16,6 +16,7 @@ from .views import (
     AddReviewView,
     generateRTMToken,
     generateRTCToken,
+    ShowReviewsView,
 )
 urlpatterns = [
     #JWT Token
@@ -33,6 +34,7 @@ urlpatterns = [
     path('companies/<int:pk>/', CompanyDetailView.as_view(), name='companies_detail'),
 
     path('add_reviews/', AddReviewView.as_view(), name='add_review'),
+    path('show_advocate_reviews/<uuid:pk>/', ShowReviewsView.as_view(), name='show_advocate_reviews'),
 
     # Agora RTM|RTC token generation link for realtime communication between advocates
     path('generate_rtm_token/', generateRTMToken.as_view(), name="generate_rtm_token"),
