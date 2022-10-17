@@ -2,6 +2,7 @@ import uuid
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
 class Company(models.Model):
@@ -62,3 +63,17 @@ class Link(models.Model):
 
     class Meta:
         unique_together = ['advocate', 'name']
+
+
+class Review(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    advocator = models.ForeignKey(to=Advocate, related_name='reviewed', on_delete=models.CASCADE, blank=False, null=False)
+    reviewed_by = models.ForeignKey(to=Advocate, related_name='reviewer', on_delete=models.CASCADE, blank=False, null=False)
+    message = models.TextField(max_length=500,blank=True, null=True)
+    rate = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(5)])
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created']
+        unique_together = ['advocator', 'reviewed_by']

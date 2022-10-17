@@ -13,6 +13,7 @@ from .views import (
     CompaniesView,
     CompanyDetailView,
     SearchAdvocateView,
+    AddReviewView,
     generateRTMToken,
     generateRTCToken,
 )
@@ -30,6 +31,8 @@ urlpatterns = [
    
     path('companies/', CompaniesView.as_view(), name='companies'),
     path('companies/<int:pk>/', CompanyDetailView.as_view(), name='companies_detail'),
+
+    path('add_reviews/', AddReviewView.as_view(), name='add_review'),
 
     # Agora RTM|RTC token generation link for realtime communication between advocates
     path('generate_rtm_token/', generateRTMToken.as_view(), name="generate_rtm_token"),

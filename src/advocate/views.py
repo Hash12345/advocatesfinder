@@ -17,7 +17,8 @@ from .serializers import (
     AdvocateUpdateSerializer,
     LinkRequestBodySerializer,
     AdvocateResponseSerializer,
-    CompanySerializer
+    CompanySerializer,
+    ReviewSerializer,
 )
 from .models import (
     Advocate,
@@ -176,3 +177,16 @@ class generateRTCToken(APIView):
         )
         data = {'app_id': appID, 'token': token}
         return Response(data, status.HTTP_200_OK)
+
+
+class AddReviewView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        request_body = request.data.copy()
+        request_body['reviewed_by'] = request.user.id
+        serializer = ReviewSerializer(data=request_body)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status.HTTP_201_CREATED)

@@ -7,6 +7,7 @@ from .models import (
     Link,
     Company,
     TechStack,    
+    Review,
 )
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -107,6 +108,9 @@ class AdvocateResponseSerializer(AdvocateBaseSerializer):
     company = CompanySerializer(read_only=True)
     tech_stack = TechStackSrializer(read_only=True, many=True)
     links = LinkSerializer(read_only=True, many=True)
+    num_of_reviews = serializers.SerializerMethodField()
+    rate = serializers.SerializerMethodField()
+    review = serializers.SerializerMethodField()
 
     class Meta(AdvocateBaseSerializer.Meta):
         fields = [
@@ -123,5 +127,38 @@ class AdvocateResponseSerializer(AdvocateBaseSerializer):
             'links',
             'created',
             'updated',
+            "num_of_reviews",
+            "rate",
+            'review',
         ]
         read_only_fields = ('id',)
+
+    def get_num_of_reviews(self, obj):
+        '''
+            In production this will be stored on advocate 
+            object using signal and can be directly accessed
+        '''
+        return len(Review.objects.filter(advocator=obj))
+    
+    def get_rate(self, obj):
+        '''
+            In production this will be stored on advocate 
+            object using signal and can be directly accessed
+        '''
+        rate = Review.objects.filter(advocator=obj).values_list('rate', flat=True)
+        return sum(rate)/len(rate) if len(rate) > 0 else None
+    
+    def get_review(self, obj):
+        reviews = Review.objects.filter(advocator=obj)[:10]
+        return ReviewSerializer(reviews, many=True).data
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'advocator', 'reviewed_by', 'message', 'rate', 'created', 'updated']
+        read_only_fields = ('id',)
+    
+    def validate(self, obj):
+        if obj['advocator'] == obj['reviewed_by']:
+            raise serializers.ValidationError("Reviewer and Advocator can't be similar.")
+        return obj
