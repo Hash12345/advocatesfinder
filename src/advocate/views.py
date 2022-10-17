@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -108,3 +110,15 @@ class CompanyDetailView(APIView):
             return Response('company with given id not found.', status.HTTP_404_NOT_FOUND)
         serializer = CompanySerializer(company)
         return Response(serializer.data, status.HTTP_200_OK)
+
+
+class SearchAdvocateView(APIView, CustomPagination):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('query')
+        queryset = Advocate.objects.filter(Q(first_name__contains=query) | Q(last_name__contains=query))
+        result_page = self.paginate_queryset(queryset, request)
+        serializer = AdvocateResponseSerializer(result_page, many=True)
+        paginated_data = self.get_paginated_response(serializer.data)
+        return Response(paginated_data, status.HTTP_200_OK)

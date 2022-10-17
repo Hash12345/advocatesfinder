@@ -8,5 +8,4 @@ class CustomPagination(pagination.LimitOffsetPagination):
             'count': self.count,
             'result': data
         }
-        print(f"Result: {result}")
         return result
