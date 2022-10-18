@@ -28,12 +28,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'advocate'
+    'corsheaders',
+    'advocate',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -119,9 +121,10 @@ AUTH_USER_MODEL = 'advocate.Advocate'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ] 
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'utils.pagination_utils.CustomPagination',
+    'PAGE_SIZE': 10, 
 }
-
 
 #JWT Setting here
 SIMPLE_JWT = {
@@ -129,3 +132,7 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=60),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+#Agora settings
+AGORA_APP_ID = os.environ.get('AGORA_APP_ID','example')
+AGORA_APP_CERTIFICATE = os.environ.get('AGORA_APP_CERTIFICATE', 'example')
