@@ -77,3 +77,16 @@ class Review(models.Model):
     class Meta:
         ordering = ['-created']
         unique_together = ['advocator', 'reviewed_by']
+
+
+class Messages(models.Model):
+    id =  models.UUIDField(primary_key=True, default=uuid.uuid4, unique=True, editable=False)
+    sender = models.ForeignKey(to = Advocate, on_delete=models.CASCADE, related_name='sender')
+    receiver = models.ForeignKey(to = Advocate, on_delete=models.CASCADE, related_name='receiver')
+    message = models.TextField(max_length=500, blank=True, null=True)
+    is_read = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created']

@@ -8,6 +8,7 @@ from .models import (
     Company,
     TechStack,    
     Review,
+    Messages,
 )
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -162,3 +163,23 @@ class ReviewSerializer(serializers.ModelSerializer):
         if obj['advocator'] == obj['reviewed_by']:
             raise serializers.ValidationError("Reviewer and Advocator can't be similar.")
         return obj
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Messages
+        fields = ['id', 'sender', 'receiver', 'message', 'is_read', 'created', 'updated']
+        read_only_fields = ('id',)
+
+
+class MessageResponseSerializer(MessageSerializer):
+    sender = AdvocateResponseSerializer()
+    receiver = AdvocateResponseSerializer()
+    is_sender = serializers.SerializerMethodField()
+    
+    class Meta(MessageSerializer.Meta):
+        fields = ['id', 'sender', 'receiver', 'message', 'is_sender', 'created', 'updated']
+
+
+    def get_is_sender(self, obj):
+        return obj.sender == self.context.get('user')

@@ -7,7 +7,6 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
 # Project Imports
@@ -19,11 +18,14 @@ from .serializers import (
     AdvocateResponseSerializer,
     CompanySerializer,
     ReviewSerializer,
+    MessageSerializer,
+    MessageResponseSerializer,
 )
 from .models import (
     Advocate,
     Company,
-    Review
+    Review,
+    Messages,
 )
 from utils.token_utils import get_tokens_for_user
 from utils.link_utils import add_advocate_to_links
@@ -205,3 +207,35 @@ class ShowReviewsView(APIView, CustomPagination):
         serializer = ReviewSerializer(result_page, many=True)
         paginated_data = self.get_paginated_response(serializer.data)
         return Response(paginated_data, status.HTTP_200_OK)
+
+class MessagesView(APIView, CustomPagination):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        sender = Advocate.objects.filter(pk=request.user.id).first()
+        receiver = Advocate.objects.filter(pk=pk).first()
+        if not receiver:
+            return Response('Advocator with given id not found.', status.HTTP_404_NOT_FOUND)
+        queryset = Messages.objects.filter(Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender))
+        result_page = self.paginate_queryset(queryset, request)
+        serializer = MessageResponseSerializer(result_page, many=True, context={'user': sender})
+
+        paginated_data = self.get_paginated_response(serializer.data)
+        return Response(paginated_data, status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        sender = Advocate.objects.filter(pk=request.user.id).first()
+        receiver = Advocate.objects.filter(pk=pk).first()
+        if not receiver:
+            return Response('Advocator with given id not found.', status.HTTP_404_NOT_FOUND)
+        request_data = request.data.copy()
+        request_data['sender'] = sender.id
+        request_data['receiver'] = receiver.id
+        serializer = MessageSerializer(data=request_data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        message=serializer.save()
+        # will add notification later.
+        return Response(MessageResponseSerializer(message).data, status.HTTP_201_CREATED)
