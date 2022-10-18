@@ -14,3 +14,6 @@ DATABASES = {
 # Base url to serve media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = 'media/'
+
+# Relaxing cors in local
+CORS_ALLOW_ALL_ORIGINS = True

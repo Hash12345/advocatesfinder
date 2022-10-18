@@ -23,3 +23,6 @@ STATIC_URL = 'static/'
 # Base url to serve media files
 MEDUA_URL = '/media/'
 MEDUA_ROOT = 'media/'
+
+# Relaxing cors in development
+CORS_ALLOW_ALL_ORIGINS = True
