@@ -1,0 +1,1 @@
+web: sh -c 'cd ./src/ && exec gunicorn advocates.wsgi --log-file -'
